@@ -227,24 +227,20 @@ with st.expander("🧠 Tips to Improve LLM Responses"):
 """)
 
 # ========================================================================================
-# 💬 Interaction Mode Selector (Chat vs File Upload)
+# 🧠 Interaction Mode
 # ========================================================================================
-st.subheader("🧠 How would you like to interact?")
+st.subheader("💬 How would you like to interact?")
 mode = st.radio("Choose input mode:", ["Chat", "Upload file"], horizontal=True)
 
 file_code = ""
 user_question = ""
 
-# ========================================================================================
-# 📝 CHAT MODE
-# ========================================================================================
+# CHAT MODE 🧑‍💻
 if mode == "Chat":
-    user_question = st.text_input("💬 Ask anything:", placeholder="What does this Python function do?")
+    user_question = st.text_input("💬 Ask anything:")
     file_code = ""
 
-# ========================================================================================
-# 📂 FILE MODE
-# ========================================================================================
+# FILE UPLOAD MODE 📂
 else:
     uploaded_file = st.file_uploader("Upload file (.py, .txt, .json, .pdf)", type=["py", "txt", "md", "json", "pdf"])
     if uploaded_file:
@@ -253,32 +249,45 @@ else:
     user_question = st.text_input("💬 Ask about the uploaded file:")
 
 # ========================================================================================
-# 🚀 Submission Handler
+# 🎯 Optional Evaluation
+# ========================================================================================
+expected_keywords = st.text_input("🔍 Expected keywords (optional, comma-separated):", placeholder="e.g. bug, readability")
+
+# ========================================================================================
+# 🚀 Ask the Assistant
 # ========================================================================================
 assistant = create_code_assistant(temperature, top_p, top_k, max_tokens)
 
 if st.button("🚀 Ask Code Whisperer"):
-    if user_question.strip():
-        full_input = f"{file_code}\n\n{user_question}" if file_code else user_question
-        keywords_list = [kw.strip() for kw in expected_keywords.split(",")] if expected_keywords else []
+    # Handle CHAT mode
+    if mode == "Chat" and user_question.strip():
+        full_input = user_question
 
-        with st.spinner("Asking Code Whisperer..."):
-            try:
-                response, score = send_with_guardrails(assistant, full_input, keywords_list)
-                with st.expander("📥 Code Whisperer’s Answer", expanded=True):
-                    st.markdown(f"```\n{response.strip()}\n```")
+    # Handle FILE mode
+    elif mode == "Upload file" and file_code.strip() and user_question.strip():
+        full_input = f"{file_code}\n\n{user_question}"
 
-                if score < 0.6:
-                    st.error("🔴 Confidence: LOW – Review carefully")
-                elif score < 0.8:
-                    st.warning("🟠 Confidence: MEDIUM – Double-check advised")
-                else:
-                    st.success("🟢 Confidence: HIGH – Looks great!")
-
-            except Exception as e:
-                st.error(f"❌ API Error: {e}")
     else:
-        st.warning("Please type a question before submitting.")
+        st.warning("Please provide a question." if mode == "Chat" else "Please upload a file and enter a question.")
+        st.stop()
+
+    keywords_list = [kw.strip() for kw in expected_keywords.split(",")] if expected_keywords else []
+
+    with st.spinner("Asking Code Whisperer..."):
+        try:
+            response, score = send_with_guardrails(assistant, full_input, keywords_list)
+            with st.expander("📥 Code Whisperer’s Answer", expanded=True):
+                st.markdown(f"```\n{response.strip()}\n```")
+
+            if score < 0.6:
+                st.error("🔴 Confidence: LOW – Review carefully")
+            elif score < 0.8:
+                st.warning("🟠 Confidence: MEDIUM – Double-check advised")
+            else:
+                st.success("🟢 Confidence: HIGH – Looks great!")
+
+        except Exception as e:
+            st.error(f"❌ API Error: {e}")
 
 # ========================================================================================
 # 📜 DISPLAYS CHAT MEMORY HISTORY
