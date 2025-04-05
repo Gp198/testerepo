@@ -142,7 +142,7 @@ Always act as a respectful, supportive mentor.
 # 🤖 Function to create an interactive code review assistant (Code Whisperer)
 # This initializes a chat session with memory using the Gemini 2.0 Flash model
 
-def create_code_assistant(code_snippet, agent_name="Code Whisperer", temperature=0.3, top_p=1.0, top_k=40, max_output_tokens=256):
+def create_code_assistant(code_snippet, agent_name="Code Whisperer", temperature=0.3, top_p=1.0, top_k=40, max_output_tokens=512):
     model = genai.GenerativeModel(
         model_name="models/gemini-2.0-flash",
         generation_config=genai.types.GenerationConfig(
@@ -173,7 +173,7 @@ def create_code_assistant(code_snippet, agent_name="Code Whisperer", temperature
 temperature = 0.2        # Controls randomness (0.0 = deterministic, 1.0 = creative)
 top_p = 0.95             # Controls nucleus sampling (range: 0–1)
 top_k = 40               # Limits to top-k most likely tokens
-max_output_tokens = 1024 # Limits response length
+max_output_tokens = 256 # Limits response length
 
 # 👤 Agent name (just for flavor)
 agent_name = "Code Whisperer"
