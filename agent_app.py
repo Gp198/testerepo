@@ -253,33 +253,32 @@ else:
     user_question = st.text_input("💬 Ask about the uploaded file:")
 
 # ========================================================================================
-# ✅ HANDLE LLM REQUEST
+# 🚀 Submission Handler
 # ========================================================================================
 assistant = create_code_assistant(temperature, top_p, top_k, max_tokens)
 
 if st.button("🚀 Ask Code Whisperer"):
-    if file_code.strip() and user_question.strip():
-        full_input = f"Here is the code or file content:\n{file_code}\n\nQuestion:\n{user_question}"
+    if user_question.strip():
+        full_input = f"{file_code}\n\n{user_question}" if file_code else user_question
         keywords_list = [kw.strip() for kw in expected_keywords.split(",")] if expected_keywords else []
 
         with st.spinner("Asking Code Whisperer..."):
             try:
                 response, score = send_with_guardrails(assistant, full_input, keywords_list)
-
                 with st.expander("📥 Code Whisperer’s Answer", expanded=True):
                     st.markdown(f"```\n{response.strip()}\n```")
 
                 if score < 0.6:
-                    st.error("🚨 Confidence Score: LOW – Please review carefully.")
+                    st.error("🔴 Confidence: LOW – Review carefully")
                 elif score < 0.8:
-                    st.warning("⚠️ Confidence Score: MEDIUM – Might need checking.")
+                    st.warning("🟠 Confidence: MEDIUM – Double-check advised")
                 else:
-                    st.success("✅ Confidence Score: HIGH – Looks solid!")
+                    st.success("🟢 Confidence: HIGH – Looks great!")
 
             except Exception as e:
-                st.error(f"❌ Gemini API Error: {e}")
+                st.error(f"❌ API Error: {e}")
     else:
-        st.warning("Please provide both code/file and a question.")
+        st.warning("Please type a question before submitting.")
 
 # ========================================================================================
 # 📜 DISPLAYS CHAT MEMORY HISTORY
