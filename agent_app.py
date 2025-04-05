@@ -94,6 +94,7 @@
 import streamlit as st
 import google.generativeai as genai
 import json
+import fitz
 
 # ========================================================================================
 # 🔐 SETUP GEMINI API (uses Streamlit secrets for secure key handling)
