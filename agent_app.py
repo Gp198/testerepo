@@ -97,6 +97,26 @@ import json
 import fitz
 
 # ========================================================================================
+# 📂 File Upload + Text Extraction
+# ========================================================================================
+
+def handle_uploaded_file(uploaded_file):
+    try:
+        ext = uploaded_file.name.split(".")[-1]
+        if ext in ["py", "txt", "md"]:
+            return uploaded_file.read().decode("utf-8")
+        elif ext == "json":
+            data = json.loads(uploaded_file.read().decode("utf-8"))
+            return json.dumps(data, indent=2)
+        elif ext == "pdf":
+            import fitz  # Local import to avoid crashing if PyMuPDF is missing
+            with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
+                return "\n".join([page.get_text() for page in doc])
+    except Exception as e:
+        st.error(f"❌ File Error: {e}")
+    return ""
+
+# ========================================================================================
 # 🔐 SETUP GEMINI API (uses Streamlit secrets for secure key handling)
 # ========================================================================================
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
