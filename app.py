@@ -230,15 +230,32 @@ if st.button("Run Analysis"):
         st.warning("Please provide both code and a question.")
     else:
         st.info("Evaluating with Code Whisperer...")
-        assistant = create_code_assistant(code_input, temperature, top_p, top_k, max_output_tokens)
 
-        response, score = safe_send_message(assistant, question, [kw.strip().lower() for kw in expected_keywords.split(",")])
+        # Create the assistant with user-defined generation settings
+        assistant = create_code_assistant(
+            code_snippet=code_input,
+            temperature=temperature,
+            top_p=top_p,
+            top_k=top_k,
+            max_output_tokens=max_output_tokens
+        )
 
+        # Ask the custom question
+        response, score = safe_send_message(
+            assistant,
+            question,
+            [kw.strip().lower() for kw in expected_keywords.split(",")] if expected_keywords else []
+        )
+
+        # Display result
         st.markdown("### 💡 Response:")
         st.write(response)
 
         st.markdown("### 📊 Evaluation:")
         st.success(format_score(score))
+
+
+
 # ✅ Define a small evaluation set to test how well the agent answers code-related questions
 # Each item includes:
 # - A code snippet
@@ -259,16 +276,10 @@ evaluation_set = [
 ]
 
 
-# In[80]:
-
-
 def evaluate_agent_response(agent, question, expected_keywords):
     response = agent.send_message(question).text.lower()
     hits = sum(1 for word in expected_keywords if word in response)
     return hits / len(expected_keywords), response
-
-
-# In[82]:
 
 
 # 🧪 Example code snippet to be reviewed by the agent
@@ -283,10 +294,6 @@ def is_prime(n):
             return False  # Not prime if divisible by any number in range
     return True  # Return True if no divisors found
 """
-
-
-# In[84]:
-
 
 # 📊 Evaluate the agent's responses to a set of questions
 # This function checks how well the agent's answers align with expected keywords
@@ -313,9 +320,6 @@ def evaluate_agent(assistant, questions_set):
         })
 
     return results  # 📤 Return the list of scored results
-
-
-# In[86]:
 
 
 # 📋 Define a set of test questions for evaluating the agent on a single code snippet
@@ -345,8 +349,6 @@ questions_to_test = [
 ]
 
 
-# In[88]:
-
 
 # 🛡️ Safe response handler: sends a question to the agent and triggers a retry if confidence is low
 # This adds an extra layer of protection against hallucinations
@@ -369,8 +371,6 @@ def safe_send_message(agent, question, expected_keywords, threshold=0.6):
     return response  # 📤 Return the final (possibly revised) response
 
 
-# In[90]:
-
 
 # 📊 Nicely format and display the result of an agent response evaluation
 # This makes my notebook output clean and readable
@@ -384,9 +384,6 @@ def format_result(question, response, score):
     print(f"🤖 Response: {response}")
     print(f"🔎 Score: {round(score*100)}% – {flag}")
     print("-" * 80)
-
-
-# In[92]:
 
 
 # 🧠 Create the assistant with the target code snippet
