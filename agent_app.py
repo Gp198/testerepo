@@ -275,6 +275,11 @@ else:
 expected_keywords = st.text_input("🔍 Expected keywords (optional, comma-separated):", placeholder="e.g. bug, readability")
 
 # ========================================================================================
+# 🤖 Instantiate Assistant
+# ========================================================================================
+assistant = create_code_assistant(temperature, top_p, top_k, max_tokens)
+
+# ========================================================================================
 # 🚀 Ask Code Whisperer!
 # ========================================================================================
 if st.button("🚀 Ask Code Whisperer"):
