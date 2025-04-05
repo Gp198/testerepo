@@ -275,31 +275,33 @@ else:
 expected_keywords = st.text_input("🔍 Expected keywords (optional, comma-separated):", placeholder="e.g. bug, readability")
 
 # ========================================================================================
-# 🚀 Ask the Assistant
+# 🚀 Ask Code Whisperer!
 # ========================================================================================
-assistant = create_code_assistant(temperature, top_p, top_k, max_tokens)
-
 if st.button("🚀 Ask Code Whisperer"):
-    # Handle CHAT mode
+    # Handle inputs per mode
     if mode == "Chat" and user_question.strip():
         full_input = user_question
-
-    # Handle FILE mode
     elif mode == "Upload file" and file_code.strip() and user_question.strip():
         full_input = f"{file_code}\n\n{user_question}"
-
     else:
         st.warning("Please provide a question." if mode == "Chat" else "Please upload a file and enter a question.")
         st.stop()
 
-    keywords_list = [kw.strip() for kw in expected_keywords.split(",")] if expected_keywords else []
+    # Display user input
+    with st.chat_message("user"):
+        st.markdown(full_input.strip())
 
-    with st.spinner("Asking Code Whisperer..."):
+    # Evaluate with guardrails
+    with st.spinner("Thinking like a senior dev..."):
         try:
+            keywords_list = [kw.strip() for kw in expected_keywords.split(",")] if expected_keywords else []
             response, score = send_with_guardrails(assistant, full_input, keywords_list)
-            with st.expander("📥 Code Whisperer’s Answer", expanded=True):
-                st.markdown(f"```\n{response.strip()}\n```")
 
+            # Pretty response box
+            with st.chat_message("assistant"):
+                st.markdown(response.strip())
+
+            # Confidence feedback
             if score < 0.6:
                 st.error("🔴 Confidence: LOW – Review carefully")
             elif score < 0.8:
