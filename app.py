@@ -71,14 +71,13 @@
 
 
 # 📦 Install the Google Generative AI SDK to access the Gemini API
-#get_ipython().system('pip install google-generativeai')
 
 
 # In[103]:
 
 
 # 📦 Install streamlit package for the Google Generative AI SDK to access the Gemini API
-#get_ipython().system('pip install streamlit google-generativeai')
+
 
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------
