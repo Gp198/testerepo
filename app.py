@@ -71,14 +71,14 @@
 
 
 # 📦 Install the Google Generative AI SDK to access the Gemini API
-get_ipython().system('pip install google-generativeai')
+#get_ipython().system('pip install google-generativeai')
 
 
 # In[103]:
 
 
 # 📦 Install streamlit package for the Google Generative AI SDK to access the Gemini API
-get_ipython().system('pip install streamlit google-generativeai')
+#get_ipython().system('pip install streamlit google-generativeai')
 
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -207,10 +207,67 @@ max_output_tokens = 1024 # Limits response length
 # 👤 Agent name (just for flavor)
 agent_name = "Code Whisperer"
 
-
+# 🌐 Streamlit Interface
+st.set_page_config(page_title="Code Whisperer", page_icon="🤖")
+st.title("🤖 Code Whisperer – Your AI Code Review Buddy")
 # In[78]:
+# 🛡️ Keyword-based scoring + retry if confidence is low
+def safe_send_message(agent, question, expected_keywords, threshold=0.6):
+    response = agent.send_message(question).text
+    response_lower = response.lower()
+    hits = sum(1 for kw in expected_keywords if kw in response_lower)
+    score = hits / len(expected_keywords)
 
+    if score < threshold:
+        follow_up = "Can you double-check your answer and be more specific or cautious?"
+        response = agent.send_message(follow_up).text
 
+    return response, score
+
+# 📊 Score formatting
+def format_score(score):
+    flag = "🟩 Accurate" if score > 0.7 else "🟨 Possible Hallucination"
+    return f"{round(score * 100)}% – {flag}"
+    
+
+# 🧾 Paste code
+code_input = st.text_area("Paste your Python code here:", height=200, value=
+"""def is_prime(n):
+    if n <= 1:
+        return False
+    for i in range(2, int(n**0.5)+1):
+        if n % i == 0:
+            return False
+    return True""")
+
+# 💬 Ask a question
+question = st.text_input("Ask a question about your code:", placeholder="e.g. Are there any bugs?")
+
+# 🎛️ Generation Controls
+with st.expander("🔧 Advanced Generation Settings"):
+    temperature = st.slider("Temperature", 0.0, 1.0, 0.3)
+    top_p = st.slider("Top-p (nucleus sampling)", 0.1, 1.0, 0.95)
+    top_k = st.slider("Top-k (top tokens to sample from)", 1, 100, 40)
+    max_output_tokens = st.slider("Max output tokens", 256, 2048, 1024)
+
+# ✅ Expected keywords (for scoring)
+expected_keywords = st.text_input("Expected keywords (comma-separated):", value="prime,check,number")
+
+# ▶️ Run on submit
+if st.button("Run Analysis"):
+    if not code_input.strip() or not question.strip():
+        st.warning("Please provide both code and a question.")
+    else:
+        st.info("Evaluating with Code Whisperer...")
+        assistant = create_code_assistant(code_input, temperature, top_p, top_k, max_output_tokens)
+
+        response, score = safe_send_message(assistant, question, [kw.strip().lower() for kw in expected_keywords.split(",")])
+
+        st.markdown("### 💡 Response:")
+        st.write(response)
+
+        st.markdown("### 📊 Evaluation:")
+        st.success(format_score(score))
 # ✅ Define a small evaluation set to test how well the agent answers code-related questions
 # Each item includes:
 # - A code snippet
