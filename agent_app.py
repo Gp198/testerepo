@@ -67,22 +67,6 @@
 # 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------
 
-# In[99]:
-
-
-# 📦 Install the Google Generative AI SDK to access the Gemini API
-#get_ipython().system('pip install google-generativeai')
-
-
-# In[103]:
-
-
-# 📦 Install streamlit package for the Google Generative AI SDK to access the Gemini API
-#get_ipython().system('pip install streamlit google-generativeai')
-
-
-# -----------------------------------------------------------------------------------------------------------------------------------------------------
-
 # ### ⚙️ How It Works
 # 
 # User inputs Python code
@@ -109,6 +93,8 @@
 
 import streamlit as st
 import google.generativeai as genai
+import json
+import fitz  # For PDF text extraction
 
 # ========================================================================================
 # 🔐 SETUP GEMINI API (uses Streamlit secrets for secure key handling)
@@ -159,7 +145,7 @@ Remember: Clarity > Creativity. Truth > Confidence.
 # ========================================================================================
 # 🧠 CREATE ASSISTANT WITH MEMORY + CUSTOM SETTINGS
 # ========================================================================================
-def create_code_assistant(temperature=0.3, top_p=1.0, top_k=40, max_output_tokens=1024):
+def create_code_assistant(temperature=0.3, top_p=1.0, top_k=40, max_output_tokens=512):
     model = genai.GenerativeModel(
         model_name="models/gemini-2.0-flash",
         generation_config=genai.types.GenerationConfig(
@@ -242,47 +228,30 @@ with st.expander("🧠 Tips to Improve LLM Responses"):
 """)
 
 # ========================================================================================
-# 📁 FILE UPLOAD OR MANUAL CODE INPUT
+# 💬 Interaction Mode Selector (Chat vs File Upload)
 # ========================================================================================
-st.subheader("📂 Upload a code/document file or paste code manually")
-
-uploaded_file = st.file_uploader("Supported formats: .py, .txt, .md, .json, .pdf", type=["py", "txt", "md", "json", "pdf"])
+st.subheader("🧠 How would you like to interact?")
+mode = st.radio("Choose input mode:", ["Chat", "Upload file"], horizontal=True)
 
 file_code = ""
+user_question = ""
 
-if uploaded_file:
-    filetype = uploaded_file.name.split(".")[-1]
+# ========================================================================================
+# 📝 CHAT MODE
+# ========================================================================================
+if mode == "Chat":
+    user_question = st.text_input("💬 Ask anything:", placeholder="What does this Python function do?")
+    file_code = ""
 
-    try:
-        if filetype in ["py", "txt", "md"]:
-            file_code = uploaded_file.read().decode("utf-8")
-            st.code(file_code, language="python")
-
-        elif filetype == "json":
-            raw = uploaded_file.read().decode("utf-8")
-            parsed = json.loads(raw)
-            file_code = json.dumps(parsed, indent=2)
-            st.code(file_code, language="json")
-
-        elif filetype == "pdf":
-            with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
-                pdf_text = ""
-                for page in doc:
-                    pdf_text += page.get_text()
-                file_code = pdf_text
-                st.text_area("📄 Extracted PDF Text:", value=pdf_text, height=300)
-
-    except Exception as e:
-        st.error(f"❌ Error reading file: {e}")
-
+# ========================================================================================
+# 📂 FILE MODE
+# ========================================================================================
 else:
-    file_code = st.text_area("Or paste code here:", height=200)
-
-# ========================================================================================
-# 💬 USER QUESTION INPUT
-# ========================================================================================
-user_question = st.text_input("💬 Ask a question about the code or file:")
-expected_keywords = st.text_input("🔍 Expected keywords (optional, comma-separated):", placeholder="e.g. bug, performance, readability")
+    uploaded_file = st.file_uploader("Upload file (.py, .txt, .json, .pdf)", type=["py", "txt", "md", "json", "pdf"])
+    if uploaded_file:
+        file_code = handle_uploaded_file(uploaded_file)
+        st.text_area("📄 File content loaded:", value=file_code, height=250)
+    user_question = st.text_input("💬 Ask about the uploaded file:")
 
 # ========================================================================================
 # ✅ HANDLE LLM REQUEST
