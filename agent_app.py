@@ -242,45 +242,76 @@ with st.expander("🧠 Tips to Improve LLM Responses"):
 """)
 
 # ========================================================================================
-# 💬 CHAT INTERFACE (Code or Question Input)
+# 📁 FILE UPLOAD OR MANUAL CODE INPUT
 # ========================================================================================
-st.subheader("💬 Paste code or ask a question:")
-user_input = st.text_area("Input", height=200, placeholder="Paste code or ask something like 'Can you find bugs?'")
+st.subheader("📂 Upload a code/document file or paste code manually")
 
-# Optional expected keywords for evaluation
-expected_keywords = st.text_input("🔍 Expected keywords (comma-separated, optional)", placeholder="e.g. loop, return, bug")
+uploaded_file = st.file_uploader("Supported formats: .py, .txt, .md, .json, .pdf", type=["py", "txt", "md", "json", "pdf"])
 
-# Create Gemini assistant with memory and custom generation settings
+file_code = ""
+
+if uploaded_file:
+    filetype = uploaded_file.name.split(".")[-1]
+
+    try:
+        if filetype in ["py", "txt", "md"]:
+            file_code = uploaded_file.read().decode("utf-8")
+            st.code(file_code, language="python")
+
+        elif filetype == "json":
+            raw = uploaded_file.read().decode("utf-8")
+            parsed = json.loads(raw)
+            file_code = json.dumps(parsed, indent=2)
+            st.code(file_code, language="json")
+
+        elif filetype == "pdf":
+            with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
+                pdf_text = ""
+                for page in doc:
+                    pdf_text += page.get_text()
+                file_code = pdf_text
+                st.text_area("📄 Extracted PDF Text:", value=pdf_text, height=300)
+
+    except Exception as e:
+        st.error(f"❌ Error reading file: {e}")
+
+else:
+    file_code = st.text_area("Or paste code here:", height=200)
+
+# ========================================================================================
+# 💬 USER QUESTION INPUT
+# ========================================================================================
+user_question = st.text_input("💬 Ask a question about the code or file:")
+expected_keywords = st.text_input("🔍 Expected keywords (optional, comma-separated):", placeholder="e.g. bug, performance, readability")
+
+# ========================================================================================
+# ✅ HANDLE LLM REQUEST
+# ========================================================================================
 assistant = create_code_assistant(temperature, top_p, top_k, max_tokens)
 
-# ========================================================================================
-# ▶️ SUBMIT TO LLM & HANDLE RESPONSE
-# ========================================================================================
-if st.button("Send"):
-    if user_input.strip():
-        with st.spinner("💬 Thinking..."):
+if st.button("🚀 Ask Code Whisperer"):
+    if file_code.strip() and user_question.strip():
+        full_input = f"Here is the code or file content:\n{file_code}\n\nQuestion:\n{user_question}"
+        keywords_list = [kw.strip() for kw in expected_keywords.split(",")] if expected_keywords else []
+
+        with st.spinner("Asking Code Whisperer..."):
             try:
-                keywords_list = [kw.strip() for kw in expected_keywords.split(",")] if expected_keywords else []
-                response, score = send_with_guardrails(assistant, user_input, keywords_list)
+                response, score = send_with_guardrails(assistant, full_input, keywords_list)
 
-                st.markdown("### 🤖 Code Whisperer says:")
-                st.write(response)
+                with st.expander("📥 Code Whisperer’s Answer", expanded=True):
+                    st.markdown(f"```\n{response.strip()}\n```")
 
-                # Show confidence score
-                st.markdown(f"### 🔎 Confidence Score: **{round(score * 100)}%**")
-
-                # Hallucination alert
                 if score < 0.6:
-                    st.error("🚨 Possible Hallucination – Review response carefully.")
+                    st.error("🚨 Confidence Score: LOW – Please review carefully.")
                 elif score < 0.8:
-                    st.warning("⚠️ Moderate confidence – Use with caution.")
+                    st.warning("⚠️ Confidence Score: MEDIUM – Might need checking.")
                 else:
-                    st.success("✅ High confidence – Looks good!")
+                    st.success("✅ Confidence Score: HIGH – Looks solid!")
 
             except Exception as e:
                 st.error(f"❌ Gemini API Error: {e}")
     else:
-        st.warning("Please enter some input before sending.")
+        st.warning("Please provide both code/file and a question.")
 
 # ========================================================================================
 # 📜 DISPLAYS CHAT MEMORY HISTORY
