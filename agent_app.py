@@ -257,10 +257,23 @@ if st.button("Send"):
         st.warning("Please enter some input before sending.")
 
 # ========================================================================================
-# 🧾 SHOW CHAT HISTORY (DEBUGGING / DEMO)
+# 📜 DISPLAY CHAT MEMORY HISTORY
+# Includes defensive checks in case of malformed data or API quirks
 # ========================================================================================
 if st.checkbox("📜 Show full conversation history"):
-    for msg in assistant.history:
-        role = msg["role"]
-        text = "\n".join(msg["parts"])
-        st.markdown(f"**{role.capitalize()}:** {text}")
+    if hasattr(assistant, "history"):
+        for msg in assistant.history:
+            try:
+                # Use attribute access (Gemini returns object, not dict)
+                role = msg.role
+                text = "\n".join(msg.parts)
+
+                # Display message clearly formatted
+                st.markdown(f"**{role.capitalize()}:** {text}")
+
+            except Exception as e:
+                # Show any error gracefully instead of crashing the app
+                st.error(f"⚠️ Error displaying message: {e}")
+    else:
+        st.warning("🤷‍♂️ No chat history found yet.")
+
