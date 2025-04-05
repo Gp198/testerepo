@@ -142,39 +142,6 @@ Always act as a respectful, supportive mentor.
 # 🤖 Function to create an interactive code review assistant (Code Whisperer)
 # This initializes a chat session with memory using the Gemini 2.0 Flash model
 
-def create_code_assistant(
-    code_snippet,
-    agent_name="Code Whisperer",
-    temperature=0.3,
-    top_p=1.0,
-    top_k=40,
-    max_output_tokens=1024
-):
-
-    # 🎛️ Create a Gemini model with configurable generation settings
-    model = genai.GenerativeModel(
-        model_name="models/gemini-2.0-flash",
-        generation_config=genai.types.GenerationConfig(
-            temperature=temperature,
-            top_p=top_p,
-            top_k=top_k,
-            max_output_tokens=max_output_tokens
-        )
-    )
-
-    # 🧠 Personalize the intro prompt and include the user's code
-    full_intro_prompt = PERSONALITY_PROMPT.format(agent_name=agent_name) + f"\n\nCode to analyze:\n{code_snippet}"
-
-    # 💬 Start the interactive chat with memory
-    convo = model.start_chat(history=[
-        {"role": "user", "parts": [full_intro_prompt]},
-        {"role": "model", "parts": [f"Hi, I'm {agent_name}, your code mentor. Ask me anything about this snippet."]}
-    ])
-    
-    # 🚀 Return the interactive chat session (agent ready for questions)
-    return convo
-
-# 🚀 Build the assistant with dynamic generation settings
 def create_code_assistant(code_snippet, temperature=0.3, top_p=1.0, top_k=40, max_output_tokens=1024):
     model = genai.GenerativeModel(
         model_name="models/gemini-2.0-flash",
@@ -185,12 +152,17 @@ def create_code_assistant(code_snippet, temperature=0.3, top_p=1.0, top_k=40, ma
             max_output_tokens=max_output_tokens
         )
     )
-
+    
+    # 🧠 Personalize the intro prompt and include the user's code
     full_intro_prompt = PERSONALITY_PROMPT + f"\n\nCode to analyze:\n{code_snippet}"
+
+    # 💬 Start the interactive chat with memory
     convo = model.start_chat(history=[
         {"role": "user", "parts": [full_intro_prompt]},
         {"role": "model", "parts": ["Hi! I'm Code Whisperer. Ask me anything about the code above."]}
     ])
+
+    # 🚀 Return the interactive chat session (agent ready for questions)
     return convo
 
 
