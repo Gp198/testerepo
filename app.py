@@ -142,7 +142,7 @@ Always act as a respectful, supportive mentor.
 # 🤖 Function to create an interactive code review assistant (Code Whisperer)
 # This initializes a chat session with memory using the Gemini 2.0 Flash model
 
-def create_code_assistant(code_snippet, temperature=0.3, top_p=1.0, top_k=40, max_output_tokens=1024):
+def create_code_assistant(code_snippet, agent_name="Code Whisperer", temperature=0.3, top_p=1.0, top_k=40, max_output_tokens=1024):
     model = genai.GenerativeModel(
         model_name="models/gemini-2.0-flash",
         generation_config=genai.types.GenerationConfig(
@@ -406,40 +406,3 @@ for item in questions_to_test:
 
     # 🖥️ Format and display the result
     format_result(question, response, score)
-
-
-# In[95]:
-
-
-# This is an optional loop to test and compare how Code Wisperer behaves with different temperatures
-# 🧪 A/B test temperature settings
-temperatures = [0.0, 0.3, 0.6, 0.9]
-
-for temp in temperatures:
-    print(f"\n🔥 Testing temperature: {temp}\n{'='*50}")
-
-    assistant = create_code_assistant(
-        code_snippet=code_snippet,
-        agent_name=agent_name,
-        temperature=temp,
-        top_p=top_p,
-        top_k=top_k,
-        max_output_tokens=max_output_tokens
-    )
-
-    for item in questions_to_test:
-        question = item["question"]
-        expected = item["expected_keywords"]
-
-        response = safe_send_message(assistant, question, expected)
-        hits = sum(1 for kw in expected if kw in response.lower())
-        score = hits / len(expected)
-
-        format_result(question, response, score)
-
-
-# In[ ]:
-
-
-
-
