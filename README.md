@@ -64,6 +64,7 @@ pip install -r requirements.txt
 
 # 5. Run the app
 streamlit run agent_app.py
+```bash
 
 ---
 
