@@ -39,7 +39,7 @@
 
 ## 🚀 Live Demo
 
-👉 Try the app on [Streamlit Cloud](https://your-streamlit-app-link.streamlit.app)
+👉 Try the app on [Streamlit Cloud](https://testerepo-d8nyu4h7mvnwfjzrvy8ivc.streamlit.app/)
 
 ---
 
@@ -64,3 +64,31 @@ pip install -r requirements.txt
 
 # 5. Run the app
 streamlit run agent_app.py
+
+---
+
+## 🏆 Capstone Goals Demonstrated
+
+✅ Agent + memory  
+✅ Structured generation  
+✅ Hallucination detection + retry  
+✅ File/document understanding  
+✅ Long context input + evaluation  
+✅ Custom prompt engineering  
+✅ GenAI scoring logic  
+✅ Deployment-ready app
+
+---
+
+## 👨‍💻 Created by
+
+**Gonçalo Pedro**  
+AI Engineer & Developer Advocate  
+🔗 [LinkedIn](https://www.linkedin.com/in/gon%C3%A7alo-pedro-647188217/)  
+📬 Contact for collaborations or feedback!
+
+---
+
+## 🧠 License
+
+MIT License – feel free to use, fork, and build upon!
