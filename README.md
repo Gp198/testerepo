@@ -45,6 +45,7 @@
 
 ## 📂 How to Run Locally
 
+```bash
 # 1. Clone the repo
 git clone https://github.com/yourusername/code-whisperer.git
 cd code-whisperer
@@ -63,7 +64,7 @@ pip install -r requirements.txt
 
 # 5. Run the app
 streamlit run agent_app.py
-
+```
 ---
 
 ## 🏆 Capstone Goals Demonstrated
